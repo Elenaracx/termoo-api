@@ -1,0 +1,1 @@
+private $palavras = config('palavras.palavras');
