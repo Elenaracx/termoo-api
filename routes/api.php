@@ -5,4 +5,4 @@ use App\Http\Controllers\JogoController;
 
 Route::post('/start', [JogoController::class, 'iniciarJogo']);
 
-Route::post('/guess', [JogoController::class, 'validarTentativa']); 
+Route::post('/guess', [JogoController::class, 'validarTentativa']);
