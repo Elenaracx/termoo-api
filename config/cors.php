@@ -6,7 +6,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://termorest.conradosal.com'],
 
     'allowed_origins_patterns' => [],
 
@@ -18,4 +18,4 @@ return [
 
     'supports_credentials' => false,
 
-]; 
+];
