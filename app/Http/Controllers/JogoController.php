@@ -185,49 +185,77 @@ class JogoController extends Controller
     }
 
     public function validarTentativa(Request $request)
-    {
-        $idJogo = $request->idJogo;
-        $palavra = strtolower($request->palavra);
+{
+    $idJogo = $request->idJogo;
 
-        $jogo = Cache::get($idJogo);
+    $palavra = strtolower($request->palavra);
 
-        if (!$jogo) {
-            return response()->json([
-                "erro" => "Jogo não encontrado"
-            ], 404);
-        }
-
-        $palavraCorreta = $jogo["palavra"];
-
-        $resultado = [];
-
-        for ($i = 0; $i < 5; $i++) {
-
-            $letra = $palavra[$i];
-
-            if ($letra == $palavraCorreta[$i]) {
-                $status = "correta";
-            } elseif (str_contains($palavraCorreta, $letra)) {
-                $status = "presente";
-            } else {
-                $status = "ausente";
-            }
-
-            $resultado[] = [
-                "letra" => $letra,
-                "status" => $status
-            ];
-        }
-
-        $jogo["tentativas"]++;
-
-        Cache::put($idJogo, $jogo, now()->addHours(1));
-
+    // Verifica se a palavra tem 5 letras
+    if (strlen($palavra) != 5) {
         return response()->json([
-            "resultado" => $resultado,
-            "venceu" => $palavra === $palavraCorreta,
-            "tentativasRestantes" => 6 - $jogo["tentativas"],
-            "palavraValida" => true
-        ]);
+            "erro" => "A palavra deve ter 5 letras"
+        ], 400);
     }
+
+    // Busca o jogo no cache
+    $jogo = Cache::get($idJogo);
+
+    // Verifica se o jogo existe
+    if (!$jogo) {
+        return response()->json([
+            "erro" => "Jogo não encontrado"
+        ], 404);
+    }
+
+    // Verifica se a palavra existe na lista
+    if (!in_array($palavra, $this->palavras)) {
+        return response()->json([
+            "erro" => "Palavra inválida"
+        ], 400);
+    }
+
+    $palavraCorreta = $jogo["palavra"];
+
+    $resultado = [];
+
+    // Verifica letra por letra
+    for ($i = 0; $i < 5; $i++) {
+
+        $letra = $palavra[$i];
+
+        if ($letra == $palavraCorreta[$i]) {
+            $status = "correta";
+        } elseif (str_contains($palavraCorreta, $letra)) {
+            $status = "presente";
+        } else {
+            $status = "ausente";
+        }
+
+        $resultado[] = [
+            "letra" => $letra,
+            "status" => $status
+        ];
+    }
+
+    // Soma tentativa
+    $jogo["tentativas"]++;
+
+    // Atualiza cache
+    Cache::put($idJogo, $jogo, now()->addHours(1));
+
+    // Verifica vitória
+    $venceu = $palavra === $palavraCorreta;
+
+    // Verifica derrota
+    $perdeu = $jogo["tentativas"] >= 6 && !$venceu;
+
+    return response()->json([
+        "resultado" => $resultado,
+        "venceu" => $venceu,
+        "perdeu" => $perdeu,
+        "tentativasRestantes" => 6 - $jogo["tentativas"],
+        "palavraValida" => true
+    ]);
+}   
+
 }
