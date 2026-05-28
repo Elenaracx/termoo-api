@@ -1,1 +1,2 @@
+// Importa dependências
 import './bootstrap';
